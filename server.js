@@ -39,11 +39,12 @@ var SampleApp = function() {
      */
     self.populateCache = function() {
         if (typeof self.zcache === "undefined") {
-            self.zcache = { 'index.html': '' };
+            self.zcache = { 'index.html': '', 'clock.js': ''};
         }
 
         //  Local cache for static content.
         self.zcache['index.html'] = fs.readFileSync('./index.html');
+        self.zcache['clock.js'] = fs.readFileSync('./clock.js');
     };
 
 
@@ -104,6 +105,9 @@ var SampleApp = function() {
             res.setHeader('Content-Type', 'text/html');
             res.send(self.cache_get('index.html') );
         };
+        self.routes['/clock.js'] = function(req, res){
+            res.send(self.cache_get('clock.js'));
+        }
     };
 
 
@@ -121,10 +125,6 @@ var SampleApp = function() {
         }
     };
 
-
-    /**
-     *  Initializes the sample application.
-     */
     self.initialize = function() {
         self.setupVariables();
         self.populateCache();
@@ -134,10 +134,6 @@ var SampleApp = function() {
         self.initializeServer();
     };
 
-
-    /**
-     *  Start the server (starts up the sample application).
-     */
     self.start = function() {
         //  Start the app on the specific interface (and port).
         self.app.listen(self.port, self.ipaddress, function() {
@@ -146,13 +142,8 @@ var SampleApp = function() {
         });
     };
 
-};   /*  Sample Application.  */
+};
 
-
-
-/**
- *  main():  Main code.
- */
 var zapp = new SampleApp();
 zapp.initialize();
 zapp.start();
