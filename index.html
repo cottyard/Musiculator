@@ -1,16 +1,20 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <title>Welcome to OpenShift</title>
+  <title>Welcome, cottyard</title>
   <script src="clock.js"></script>
+  <script src="keys.js"></script>
 </head>
 <body onLoad="start_client();">
-  <canvas id="clock" height="150" width="150"/>
+  
+  <canvas id="clock" height="140" width="140"></canvas>
+  <canvas id="keys" height="500" width="400"></canvas>
+  
   <script>
     function start_client() {
       draw_clock();
+      draw_keys();
     }
   </script>
-  <p>Hello, world!</p>
 </body>
 </html>

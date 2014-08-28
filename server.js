@@ -45,6 +45,7 @@ var SampleApp = function() {
         //  Local cache for static content.
         self.zcache['index.html'] = fs.readFileSync('./index.html');
         self.zcache['clock.js'] = fs.readFileSync('./clock.js');
+        self.zcache['keys.js'] = fs.readFileSync('./keys.js');
     };
 
 
@@ -96,18 +97,16 @@ var SampleApp = function() {
     self.createRoutes = function() {
         self.routes = { };
 
-        self.routes['/asciimo'] = function(req, res) {
-            var link = "http://i.imgur.com/kmbjB.png";
-            res.send("<html><body><img src='" + link + "'></body></html>");
-        };
-
         self.routes['/'] = function(req, res) {
             res.setHeader('Content-Type', 'text/html');
             res.send(self.cache_get('index.html') );
         };
         self.routes['/clock.js'] = function(req, res){
             res.send(self.cache_get('clock.js'));
-        }
+        };
+        self.routes['/keys.js'] = function(req, res){
+            res.send(self.cache_get('keys.js'));
+        };
     };
 
 
@@ -117,7 +116,7 @@ var SampleApp = function() {
      */
     self.initializeServer = function() {
         self.createRoutes();
-        self.app = express.createServer();
+        self.app = express();
 
         //  Add handlers for the app (from the routes).
         for (var r in self.routes) {
