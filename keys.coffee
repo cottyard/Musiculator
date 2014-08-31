@@ -7,11 +7,11 @@ key_positions = [
 ]
 
 key_sizes = [
-  [35], [35], [35], [35],
-  [35], [35], [35], [35, 75],
-  [35], [35], [35], 
-  [35], [35], [35], [35, 75],
-  [75, 35],   [35], 
+  [35, 35], [35, 35], [35, 35], [35, 35],
+  [35, 35], [35, 35], [35, 35], [35, 75],
+  [35, 35], [35, 35], [35, 35], 
+  [35, 35], [35, 35], [35, 35], [35, 75],
+  [75, 35],           [35, 35], 
 ]
 
 key_texts = [
@@ -23,22 +23,39 @@ key_texts = [
 ]
 
 key_event_codes = [
-  [      ], [48    ], [ 45, 189], [ 61, 187],
-  [55    ], [56    ], [ 57     ], [115,  83],
-  [52    ], [53    ], [ 54     ],
-  [49    ], [50    ], [ 51     ], [120,  88],
-  [97, 65],           [122,  90],
+  [       ], [48, 111], [189, 106], [187, 109],
+  [55, 103], [56, 104], [ 57, 105], [ 83, 107],
+  [52, 100], [53, 101], [ 54, 102],
+  [49,  97], [50,  98], [ 51,  99], [ 88,  13],
+  [65,  96],            [ 90, 110],
+]
+
+get_action = (note) ->
+  -> play_note note
+
+key_action_begin_funcs = [
+            (->), get_action(76), get_action(77), get_action(79),
+  get_action(71), get_action(72), get_action(74),           (->),
+  get_action(65), get_action(67), get_action(69),
+  get_action(60), get_action(62), get_action(64),           (->),
+            (->),                           (->),
+]
+
+key_action_end_funcs = [
+  (->),(->),(->),(->),
+  (->),(->),(->),(->),
+  (->),(->),(->),
+  (->),(->),(->),(->),
+  (->),(->),
 ]
 
 keyboard_press_handlers = {}
 keyboard_release_handlers = {}
 
 $(document).keydown (event) ->
-  event.preventDefault()
   keyboard_press_handlers[event.which]?()
   
 $(document).keyup (event) ->
-  event.preventDefault()
   keyboard_release_handlers[event.which]?()
 
 
@@ -47,22 +64,31 @@ draw_keys = ->
   ctx = canvas.getContext '2d'
   
   keys = for pos, i in key_positions
-    new Key(ctx, pos, key_sizes[i], key_texts[i], key_event_codes[i])
+    new Key(
+      ctx, pos, 
+      key_sizes[i], 
+      key_texts[i], 
+      key_event_codes[i],
+      key_action_begin_funcs[i],
+      key_action_end_funcs[i],
+    )
 
   k.draw() for k in keys
 
 
 class Key
-  constructor: (@ctx, @position, @size, @text, @event_code) ->
+  constructor: (@ctx, @position, @size, @text, @event_code, @action_begin, @action_end) ->
     keyboard_press_handlers[c] = @draw_pressed for c in @event_code
     keyboard_release_handlers[c] = @draw for c in @event_code
 
   draw: () =>
+    @action_end()
     clear_rect @ctx, @position, @size
     draw_curved_rect @ctx, @position, @size
     draw_text @ctx, @position, @text
 
   draw_pressed: () =>
+    @action_begin()
     clear_rect @ctx, @position, @size
     draw_curved_rect @ctx, @position, @size, true
     draw_text @ctx, @position, @text, true
@@ -76,14 +102,11 @@ draw_text = (ctx, [pos_x, pos_y], text, inverse) ->
   ctx.fillStyle = fs
 
 clear_rect = (ctx, [pos_x, pos_y], [size_x, size_y]) ->
-  size_y ?= size_x
   ctx.clearRect \
     pos_x - size_x - 1, pos_y - size_y - 1, 
     size_x * 2 + 2, size_y * 2 + 2
 
 draw_curved_rect = (ctx, [pos_x, pos_y], [size_x, size_y], filled) ->
-  size_y ?= size_x
-
   curve_to = ([cp_x, cp_y], [x, y]) -> 
     ctx.bezierCurveTo cp_x, cp_y, cp_x, cp_y, x, y
 
@@ -113,5 +136,8 @@ draw_curved_rect = (ctx, [pos_x, pos_y], [size_x, size_y], filled) ->
   curve_to bottom_left, left
   if filled then ctx.fill() else ctx.stroke()
 
+play_note = (note) ->
+  #MIDI.noteOn(0, note, 127, 0)
 
+  
 window.draw_keys = draw_keys
