@@ -1,3 +1,34 @@
+# document
+
+keyboard_press_handlers = {}
+keyboard_release_handlers = {}
+
+$(document).keydown (event) ->
+  keyboard_press_handlers[event.which]?()
+  
+$(document).keyup (event) ->
+  keyboard_release_handlers[event.which]?()
+
+# entry
+  
+draw_keys = ->
+  canvas = document.getElementById 'keys'
+  ctx = canvas.getContext '2d'
+  
+  keys = for pos, i in key_positions
+    new Key(
+      i,
+      ctx, 
+      pos,
+      key_sizes[i], 
+      key_texts[i], 
+      key_event_codes[i],
+    )
+
+  k.draw() for k in keys
+
+# key
+
 key_positions = [
   [100, 100], [180, 100], [260, 100], [340, 100],
   [100, 180], [180, 180], [260, 180], [340, 220],
@@ -30,77 +61,23 @@ key_event_codes = [
   [65,  96],            [ 90, 110],
 ]
 
-
-get_action_play = (note) ->
-  -> play_note note
-
-get_action_suspend = (note) ->
-  -> suspend_note note
-
-get_action_transpose = (scale) ->
-  -> transpose scale
-
-  
-key_action_begin_funcs = [
-                 (->), get_action_play(76), get_action_play(77), get_action_play(79),
-  get_action_play(71), get_action_play(72), get_action_play(74), get_action_transpose(12),
-  get_action_play(65), get_action_play(67), get_action_play(69),
-  get_action_play(60), get_action_play(62), get_action_play(64), get_action_transpose(-12),
-  get_action_transpose(1),                  get_action_transpose(-1),
-]
-
-key_action_end_funcs = [
-                    (->), get_action_suspend(76), get_action_suspend(77), get_action_suspend(79),
-  get_action_suspend(71), get_action_suspend(72), get_action_suspend(74), get_action_transpose(-12),
-  get_action_suspend(65), get_action_suspend(67), get_action_suspend(69),
-  get_action_suspend(60), get_action_suspend(62), get_action_suspend(64), get_action_transpose(12),
-  get_action_transpose(-1),                       get_action_transpose(1),
-]
-
-keyboard_press_handlers = {}
-keyboard_release_handlers = {}
-
-$(document).keydown (event) ->
-  keyboard_press_handlers[event.which]?()
-  
-$(document).keyup (event) ->
-  keyboard_release_handlers[event.which]?()
-
-
-draw_keys = ->
-  canvas = document.getElementById 'keys'
-  ctx = canvas.getContext '2d'
-  
-  keys = for pos, i in key_positions
-    new Key(
-      ctx, pos, 
-      key_sizes[i], 
-      key_texts[i], 
-      key_event_codes[i],
-      key_action_begin_funcs[i],
-      key_action_end_funcs[i],
-    )
-
-  k.draw() for k in keys
-
-
 class Key
-  constructor: (@ctx, @position, @size, @text, @event_code, @action_begin, @action_end) ->
+  constructor: (@id, @ctx, @position, @size, @text, @event_code) ->
     keyboard_press_handlers[c] = @press for c in @event_code
     keyboard_release_handlers[c] = @release for c in @event_code
     @is_pressed = false
-    
+
   press: =>
     return if @is_pressed
     @is_pressed = true
     @draw_pressed()
-    @action_begin()
-    
+    music_key_down @id
+
   release: =>
     return unless @is_pressed
     @is_pressed = false
     @draw()
-    @action_end()
+    music_key_up @id
 
   draw: ->
     clear_rect @ctx, @position, @size
@@ -112,6 +89,7 @@ class Key
     draw_curved_rect @ctx, @position, @size, true
     draw_text @ctx, @position, @text, true
     
+# draw on canvas
 
 draw_text = (ctx, [pos_x, pos_y], text, inverse) ->
   ctx.font = "40px Courier New"
@@ -155,16 +133,48 @@ draw_curved_rect = (ctx, [pos_x, pos_y], [size_x, size_y], filled) ->
   curve_to bottom_left, left
   if filled then ctx.fill() else ctx.stroke()
 
-  
+# play note
+
 note_offset = 0
 
 transpose = (scale) ->
   note_offset += scale
-  
+
 play_note = (note) ->
-  MIDI.noteOn(0, note + note_offset, 127, 0)
+  MIDI.noteOn(0, note, 127, 0)
 
 suspend_note = (note) ->
-  MIDI.noteOff(0, note + note_offset, 0)
-  
+  MIDI.noteOff(0, note, 0)
+
+note_key_action = (note) ->
+  -> 
+    freezed_note = note + note_offset # "note += note_offset" here creates an interesting sticky tune effect
+    play_note freezed_note
+    do (freezed_note) ->
+      -> suspend_note freezed_note
+
+tune_key_action = (scale) ->
+  -> 
+    transpose scale
+    -> transpose -scale
+
+
+key_action_funcs = [
+                 (->), note_key_action(76), note_key_action(77), note_key_action(79),
+  note_key_action(71), note_key_action(72), note_key_action(74), tune_key_action(12),
+  note_key_action(65), note_key_action(67), note_key_action(69),
+  note_key_action(60), note_key_action(62), note_key_action(64), tune_key_action(-12),
+  tune_key_action(1),                       tune_key_action(-1),
+]
+
+key_action_pool = {}
+
+music_key_down = (id) ->
+  key_action_pool[id] = key_action_funcs[id]()
+
+music_key_up = (id) ->
+  key_action_pool[id]?()
+  delete key_action_pool[id]
+
+
 window.draw_keys = draw_keys
