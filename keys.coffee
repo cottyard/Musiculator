@@ -30,23 +30,31 @@ key_event_codes = [
   [65,  96],            [ 90, 110],
 ]
 
-get_action = (note) ->
+
+get_action_play = (note) ->
   -> play_note note
 
+get_action_suspend = (note) ->
+  -> suspend_note note
+
+get_action_transpose = (scale) ->
+  -> transpose scale
+
+  
 key_action_begin_funcs = [
-            (->), get_action(76), get_action(77), get_action(79),
-  get_action(71), get_action(72), get_action(74),           (->),
-  get_action(65), get_action(67), get_action(69),
-  get_action(60), get_action(62), get_action(64),           (->),
-            (->),                           (->),
+                 (->), get_action_play(76), get_action_play(77), get_action_play(79),
+  get_action_play(71), get_action_play(72), get_action_play(74), get_action_transpose(12),
+  get_action_play(65), get_action_play(67), get_action_play(69),
+  get_action_play(60), get_action_play(62), get_action_play(64), get_action_transpose(-12),
+  get_action_transpose(1),                  get_action_transpose(-1),
 ]
 
 key_action_end_funcs = [
-  (->),(->),(->),(->),
-  (->),(->),(->),(->),
-  (->),(->),(->),
-  (->),(->),(->),(->),
-  (->),(->),
+                    (->), get_action_suspend(76), get_action_suspend(77), get_action_suspend(79),
+  get_action_suspend(71), get_action_suspend(72), get_action_suspend(74), get_action_transpose(-12),
+  get_action_suspend(65), get_action_suspend(67), get_action_suspend(69),
+  get_action_suspend(60), get_action_suspend(62), get_action_suspend(64), get_action_transpose(12),
+  get_action_transpose(-1),                       get_action_transpose(1),
 ]
 
 keyboard_press_handlers = {}
@@ -78,21 +86,32 @@ draw_keys = ->
 
 class Key
   constructor: (@ctx, @position, @size, @text, @event_code, @action_begin, @action_end) ->
-    keyboard_press_handlers[c] = @draw_pressed for c in @event_code
-    keyboard_release_handlers[c] = @draw for c in @event_code
-
-  draw: () =>
+    keyboard_press_handlers[c] = @press for c in @event_code
+    keyboard_release_handlers[c] = @release for c in @event_code
+    @is_pressed = false
+    
+  press: =>
+    return if @is_pressed
+    @is_pressed = true
+    @draw_pressed()
+    @action_begin()
+    
+  release: =>
+    return unless @is_pressed
+    @is_pressed = false
+    @draw()
     @action_end()
+
+  draw: ->
     clear_rect @ctx, @position, @size
     draw_curved_rect @ctx, @position, @size
     draw_text @ctx, @position, @text
 
-  draw_pressed: () =>
-    @action_begin()
+  draw_pressed: ->
     clear_rect @ctx, @position, @size
     draw_curved_rect @ctx, @position, @size, true
     draw_text @ctx, @position, @text, true
-
+    
 
 draw_text = (ctx, [pos_x, pos_y], text, inverse) ->
   ctx.font = "40px Courier New"
@@ -136,8 +155,16 @@ draw_curved_rect = (ctx, [pos_x, pos_y], [size_x, size_y], filled) ->
   curve_to bottom_left, left
   if filled then ctx.fill() else ctx.stroke()
 
-play_note = (note) ->
-  #MIDI.noteOn(0, note, 127, 0)
+  
+note_offset = 0
 
+transpose = (scale) ->
+  note_offset += scale
+  
+play_note = (note) ->
+  MIDI.noteOn(0, note + note_offset, 127, 0)
+
+suspend_note = (note) ->
+  MIDI.noteOff(0, note + note_offset, 0)
   
 window.draw_keys = draw_keys
