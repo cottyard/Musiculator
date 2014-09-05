@@ -1,3 +1,1 @@
-The OpenShift `nodejs` cartridge documentation can be found at:
-
-http://openshift.github.io/documentation/oo_cartridge_guide.html#nodejs
+This application is deployed at https://app-cottyard.rhcloud.com
