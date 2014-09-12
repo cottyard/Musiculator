@@ -14,18 +14,21 @@
 
   <script src="clock.js"></script>
   <script src="keys.js"></script>
+  <script src="piano.js"></script>
   
 </head>
 <body onLoad="start_client();">
   
   <canvas id="clock" height="140" width="140"></canvas>
   <canvas id="keys" height="500" width="400"></canvas>
+  <canvas id="piano" height="500" width="650"></canvas>
   
   <script>
     function start_client() {
       MIDI.loadPlugin(function(){
         draw_clock();
         draw_keys();
+        draw_piano();
       });
     }
   </script>
