@@ -1,4 +1,4 @@
-function draw_clock(){
+function clock(){
   (
     run_clock = get_run_clock()
   )();

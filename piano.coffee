@@ -1,20 +1,3 @@
-round_rect = (ctx, x, y, width, height, radius, fill) ->
-  ctx.beginPath()
-  ctx.moveTo x + radius, y
-  ctx.lineTo x + width - radius, y
-  ctx.quadraticCurveTo x + width, y, x + width, y + radius
-  ctx.lineTo x + width, y + height - radius
-  ctx.quadraticCurveTo x + width, y + height, x + width - radius, y + height
-  ctx.lineTo x + radius, y + height
-  ctx.quadraticCurveTo x, y + height, x, y + height - radius
-  ctx.lineTo x, y + radius
-  ctx.quadraticCurveTo x, y, x + radius, y
-  ctx.closePath()
-  
-  if fill then ctx.fill() else ctx.stroke()
-
-util = { round_rect }
-
 key_count = 26
 keyboard_start = 3
 keyboard_end = 603
@@ -36,60 +19,139 @@ halfkey_offset_x = key_width * 7 / 10
 halfkey_positions_x = (x for x in [keyboard_start + halfkey_offset_x..keyboard_end] by key_width)
 halfkey_position_y = key_position_y - 1
 
-#ctx is really noisy!
+key_count = key_positions_x.length
+halfkey_count = halfkey_positions_x.length
 
-draw_piano = ->
+key_status = ('up' for [1..key_count])
+halfkey_status = ('up' for [1..halfkey_count])
+
+ctx = null
+canvas = null
+
+piano = ->
   canvas = document.getElementById 'piano'
   ctx = canvas.getContext '2d'
-  
-  for n in [1..key_count]
-    draw_key_released ctx, n
-    
-  draw_key_pressed ctx, 3
+  draw_piano()
 
-  for n in [1..key_count]
-    draw_halfkey_released ctx, n
-    
-  draw_halfkey_pressed ctx, 1
+# draw piano
 
-  #round_rect ctx, 100, 100, width, height, radius, true
-  #round_rect ctx, 185, 99, 30, 150, radius, true
-  #ctx.fillStyle = 'rgb(0, 0, 0)'
-  #round_rect ctx, 135, 99, 30, 150, radius, true
+draw_piano = ->
+  for s, n in key_status
+    switch s
+      when 'up' then draw_key_released n
+      when 'down' then draw_key_pressed n
 
-with_transparent_blue = (ctx, func) ->
+  for s, n in halfkey_status
+    switch s
+      when 'up' then draw_halfkey_released n
+      when 'down' then draw_halfkey_pressed n
+
+with_transparent_blue_decorat = (func) ->
   ->
     fs = ctx.fillStyle
     ctx.fillStyle = 'rgba(0, 0, 255, 0.5)'
     func.apply @, arguments
     ctx.fillStyle = fs
 
-draw_key = (ctx, num, fill) ->
+draw_key_released = (num) ->
+  draw_key num
+
+draw_key_pressed = (num) ->
+  draw_key num
+  (with_transparent_blue_decorat draw_key) num, true
+
+draw_halfkey_released = (num) ->
+  draw_halfkey num
+
+draw_halfkey_pressed = (num) ->
+  draw_halfkey num
+  (with_transparent_blue_decorat draw_halfkey) num
+
+draw_key = (num, fill) ->
   util.round_rect(
-    ctx, 
-    key_positions_x[num - 1], key_position_y, 
+    ctx,
+    key_positions_x[num], key_position_y, 
     key_width, key_height, 
     key_radius, fill)
 
-draw_key_released = (ctx, num) ->
-  draw_key ctx, num
-
-draw_key_pressed = (ctx, num) ->
-  (with_transparent_blue ctx, draw_key) ctx, num, true
-  
-
-draw_halfkey = (ctx, num) ->
-  unless num % 7 in [3, 0]
+draw_halfkey = (num) ->
+  unless num % 7 in [2, 6]
     util.round_rect(
-      ctx, 
-      halfkey_positions_x[num - 1], halfkey_position_y, 
+      ctx,
+      halfkey_positions_x[num], halfkey_position_y, 
       halfkey_width, halfkey_height, 
       key_radius, true)
 
-draw_halfkey_released = (ctx, num) ->
-  draw_halfkey ctx, num
+# local operation
 
-draw_halfkey_pressed = (ctx, num) ->
-  (with_transparent_blue ctx, draw_halfkey) ctx, num
+redraw_piano_decorat = (func) ->
+  ->
+    func.apply @, arguments
+    util.clear_canvas ctx, canvas
+    draw_piano()
 
-window.draw_piano = draw_piano
+press_key = redraw_piano_decorat (num) ->
+  key_status[num] = 'down'
+
+release_key = redraw_piano_decorat (num) ->
+  key_status[num] = 'up'
+
+press_halfkey = redraw_piano_decorat (num) ->
+  halfkey_status[num] = 'down'
+
+release_halfkey = redraw_piano_decorat (num) ->
+  halfkey_status[num] = 'up'
+
+# translate note input to local operation
+
+translate_white =
+  0: 0
+  2: 1
+  4: 2
+  5: 3
+  7: 4
+  9: 5
+  11: 6
+
+translate_black =
+  1: 0
+  3: 1
+  6: 3
+  8: 4
+  10: 5
+
+translate =
+  white: translate_white
+  black: translate_black
+
+note_to_piano_key = (note) ->
+  alphabet = (note - 48) % 12
+  type = if alphabet of translate_black then 'black' else 'white'
+  num = (note - 48) // 12 * 7 + translate[type][alphabet]
+  [type, num]
+
+select_action =
+  press:
+    white: press_key
+    black: press_halfkey
+  release:
+    white: release_key
+    black: release_halfkey
+
+handle_note_action = (action_type, note) ->
+  [key_type, key_num] = note_to_piano_key note
+  select_action[action_type][key_type](key_num)
+
+# api
+
+press_note = (note) ->
+  handle_note_action 'press', note
+  
+release_note = (note) ->
+  handle_note_action 'release', note
+
+window.piano = {
+  piano,
+  press_note,
+  release_note
+}

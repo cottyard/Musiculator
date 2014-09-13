@@ -13,6 +13,7 @@
   <script src="./inc/base64binary.js" type="text/javascript"></script>
 
   <script src="clock.js"></script>
+  <script src="util.js"></script>
   <script src="keys.js"></script>
   <script src="piano.js"></script>
   
@@ -26,9 +27,9 @@
   <script>
     function start_client() {
       MIDI.loadPlugin(function(){
-        draw_clock();
-        draw_keys();
-        draw_piano();
+        clock();
+        keys();
+        piano.piano();
       });
     }
   </script>

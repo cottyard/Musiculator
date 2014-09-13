@@ -11,7 +11,7 @@ $(document).keyup (event) ->
 
 # entry
   
-draw_keys = ->
+keys = ->
   canvas = document.getElementById 'keys'
   ctx = canvas.getContext '2d'
   
@@ -80,59 +80,15 @@ class Key
     music_key_up @id
 
   draw: ->
-    clear_rect @ctx, @position, @size
-    draw_curved_rect @ctx, @position, @size
-    draw_text @ctx, @position, @text
+    util.clear_rect @ctx, @position, @size
+    util.curved_rect @ctx, @position, @size
+    util.print_text @ctx, @position, @text
 
   draw_pressed: ->
-    clear_rect @ctx, @position, @size
-    draw_curved_rect @ctx, @position, @size, true
-    draw_text @ctx, @position, @text, true
+    util.clear_rect @ctx, @position, @size
+    util.curved_rect @ctx, @position, @size, true
+    util.print_text @ctx, @position, @text, true
     
-# draw on canvas
-
-draw_text = (ctx, [pos_x, pos_y], text, inverse) ->
-  ctx.font = "40px Courier New"
-  fs = ctx.fillStyle
-  ctx.fillStyle = if inverse then 'white' else 'black'
-  ctx.fillText text, pos_x, pos_y
-  ctx.fillStyle = fs
-
-clear_rect = (ctx, [pos_x, pos_y], [size_x, size_y]) ->
-  ctx.clearRect \
-    pos_x - size_x - 1, pos_y - size_y - 1, 
-    size_x * 2 + 2, size_y * 2 + 2
-
-draw_curved_rect = (ctx, [pos_x, pos_y], [size_x, size_y], filled) ->
-  curve_to = ([cp_x, cp_y], [x, y]) -> 
-    ctx.bezierCurveTo cp_x, cp_y, cp_x, cp_y, x, y
-
-  move_to = ([x, y]) ->
-    ctx.moveTo x, y
-
-  pos_x_l = pos_x - size_x
-  pos_x_r = pos_x + size_x
-  pos_y_t = pos_y - size_y
-  pos_y_b = pos_y + size_y
-
-  top = [pos_x, pos_y_t]
-  left = [pos_x_l, pos_y]
-  right = [pos_x_r, pos_y]
-  bottom = [pos_x, pos_y_b]
-
-  top_left = [pos_x_l, pos_y_t]
-  top_right = [pos_x_r, pos_y_t]
-  bottom_left = [pos_x_l, pos_y_b]
-  bottom_right = [pos_x_r, pos_y_b]
-
-  ctx.beginPath()
-  move_to left
-  curve_to top_left, top
-  curve_to top_right, right
-  curve_to bottom_right, bottom
-  curve_to bottom_left, left
-  if filled then ctx.fill() else ctx.stroke()
-
 # play note
 
 note_offset = 0
@@ -141,9 +97,11 @@ transpose = (scale) ->
   note_offset += scale
 
 play_note = (note) ->
+  window.piano.press_note note
   MIDI.noteOn(0, note, 127, 0)
 
 suspend_note = (note) ->
+  window.piano.release_note note
   MIDI.noteOff(0, note, 0)
 
 note_key_action = (note) ->
@@ -177,4 +135,4 @@ music_key_up = (id) ->
   delete key_action_pool[id]
 
 
-window.draw_keys = draw_keys
+window.keys = keys
