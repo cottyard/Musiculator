@@ -104,29 +104,25 @@ release_halfkey = redraw_piano_decorat (num) ->
 
 # translate note input to local operation
 
-translate_white =
-  0: 0
-  2: 1
-  4: 2
-  5: 3
-  7: 4
-  9: 5
-  11: 6
-
-translate_black =
-  1: 0
-  3: 1
-  6: 3
-  8: 4
-  10: 5
-
 translate =
-  white: translate_white
-  black: translate_black
+  white:
+    0: 0
+    2: 1
+    4: 2
+    5: 3
+    7: 4
+    9: 5
+    11: 6
+  black:
+    1: 0
+    3: 1
+    6: 3
+    8: 4
+    10: 5
 
 note_to_piano_key = (note) ->
   alphabet = (note - 48) % 12
-  type = if alphabet of translate_black then 'black' else 'white'
+  type = if alphabet of translate.black then 'black' else 'white'
   num = (note - 48) // 12 * 7 + translate[type][alphabet]
   [type, num]
 
@@ -138,17 +134,25 @@ select_action =
     white: release_key
     black: release_halfkey
 
-handle_note_action = (action_type, note) ->
+gui_handle_action = (action_type, note) ->
   [key_type, key_num] = note_to_piano_key note
   select_action[action_type][key_type](key_num)
 
 # api
 
+note_status = []
+
 press_note = (note) ->
-  handle_note_action 'press', note
+  unless note_status[note]?
+    note_status[note] = true
+    MIDI.noteOn(0, note, 127, 0)
+    gui_handle_action 'press', note
   
 release_note = (note) ->
-  handle_note_action 'release', note
+  if note_status[note]?
+    note_status[note] = null
+    MIDI.noteOff(0, note, 0)
+    gui_handle_action 'release', note
 
 window.piano = {
   piano,

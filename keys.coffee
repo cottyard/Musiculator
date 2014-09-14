@@ -100,17 +100,23 @@ note_offset = 0
 transpose = (scale) ->
   note_offset += scale
 
+note_activators_count = []
+
 play_note = (note) ->
-  window.piano.press_note note
-  MIDI.noteOn(0, note, 127, 0)
+  if note_activators_count[note]?
+    note_activators_count[note]++
+  else
+    note_activators_count[note] = 1
+
+  window.piano.press_note note if note_activators_count[note] == 1
 
 suspend_note = (note) ->
-  window.piano.release_note note
-  MIDI.noteOff(0, note, 0)
+  note_activators_count[note]--
+  window.piano.release_note note if note_activators_count[note] == 0
 
 note_key_action = (note) ->
   -> 
-    freezed_note = note + note_offset # "note += note_offset" here creates an interesting sticky tune effect
+    freezed_note = note + note_offset
     play_note freezed_note
     do (freezed_note) ->
       -> suspend_note freezed_note
@@ -119,7 +125,6 @@ tune_key_action = (scale) ->
   -> 
     transpose scale
     -> transpose -scale
-
 
 key_action_funcs = [
                  (->), note_key_action(76), note_key_action(77), note_key_action(79),
