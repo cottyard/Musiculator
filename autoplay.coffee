@@ -33,20 +33,22 @@ release_holded_keys = ->
 
 # play
 
-playing = true
+playing = false
+playing_timeout_obj = null
 
 start_playing = ->
-  simulate_keydown 'S'
-  play generator play_list
+  unless playing
+    playing = true
+    simulate_keydown 'S'
+    play generator play_list
 
 stop_playing = ->
   if playing
     playing = false
-    playing_finished()
-
-playing_finished = ->
-  release_holded_keys()
-  simulate_keyup 'S'
+    simulate_keyup 'S'
+    release_holded_keys()
+    if playing_timeout_obj?
+      clearTimeout playing_timeout_obj
 
 play = (music_box) ->
   return unless playing
@@ -79,7 +81,7 @@ generator = (input_stream) ->
     input_stream[current++]
 
 delay = (callback, seconds) ->
-  setTimeout callback, seconds * 1000
+  playing_timeout_obj = setTimeout callback, seconds * 1000
 
 window.autoplay = {
   start_playing,

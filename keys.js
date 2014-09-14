@@ -21,7 +21,7 @@
   });
 
   keys = function() {
-    var canvas, ctx, i, k, pos, _i, _len, _results;
+    var canvas, ctx, i, k, pos, _i, _len;
     canvas = document.getElementById('keys');
     ctx = canvas.getContext('2d');
     keys = (function() {
@@ -33,12 +33,14 @@
       }
       return _results;
     })();
-    _results = [];
     for (_i = 0, _len = keys.length; _i < _len; _i++) {
       k = keys[_i];
-      _results.push(k.draw());
+      k.draw();
     }
-    return _results;
+    return keyboard_press_handlers[32] = function() {
+      window.autoplay.stop_playing();
+      return window.autoplay.start_playing();
+    };
   };
 
   key_positions = [[100, 100], [180, 100], [260, 100], [340, 100], [100, 180], [180, 180], [260, 180], [340, 220], [100, 260], [180, 260], [260, 260], [100, 340], [180, 340], [260, 340], [340, 380], [140, 420], [260, 420]];

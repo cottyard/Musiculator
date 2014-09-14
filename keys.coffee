@@ -30,6 +30,9 @@ keys = ->
     )
 
   k.draw() for k in keys
+  keyboard_press_handlers[32] = ->
+    window.autoplay.stop_playing()
+    window.autoplay.start_playing()
 
 # key
 
