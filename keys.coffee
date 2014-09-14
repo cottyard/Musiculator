@@ -4,8 +4,12 @@ keyboard_press_handlers = {}
 keyboard_release_handlers = {}
 
 $(document).keydown (event) ->
+  # stop autoplay when user hits a key
+  # these extra lines of code are signs of code corruption
+  unless event.is_autoplay
+    window.autoplay.stop_playing()
   keyboard_press_handlers[event.which]?()
-  
+
 $(document).keyup (event) ->
   keyboard_release_handlers[event.which]?()
 

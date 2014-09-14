@@ -9,6 +9,9 @@
 
   $(document).keydown(function(event) {
     var _name;
+    if (!event.is_autoplay) {
+      window.autoplay.stop_playing();
+    }
     return typeof keyboard_press_handlers[_name = event.which] === "function" ? keyboard_press_handlers[_name]() : void 0;
   });
 

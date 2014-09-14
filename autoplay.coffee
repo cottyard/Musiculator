@@ -1,10 +1,12 @@
 meter = 0.25
 play_list = """
-.345|5.3.|5..8|5.3.|.456|6.4.|6......
-.456|6.4.|6..9|7.5.|.345|5.8.|5......
-.678|8.6.|8..6|8.6.|.456|6.4.|6......
-.456|6.4.|2..3|4.2.|..{Z1}.|1......
+.345|5.3.|5..8|5.3.|.456|6.4.|6...|....
+.456|6.4.|6.9.|7.5.|.345|5.8.|5...|....
+.678|8.6.|8..6|8.6.|.456|6.4.|6...|....
+.456|6.4.|2..3|4.2.|..1.|....|....
 """
+
+# simulate keyboard event
 
 simulate_keydown = (char) ->
   trigger 'keydown', char.charCodeAt(0)
@@ -15,6 +17,7 @@ simulate_keyup = (char) ->
 trigger = (event_type, which) ->
   e = jQuery.Event event_type
   e.which = which
+  e.is_autoplay = true
   $(document).trigger(e)
 
 holded_keys = ''
@@ -28,19 +31,29 @@ release_holded_keys = ->
     simulate_keyup k
   holded_keys = ''
 
-autoplay = ->
+# play
+
+playing = true
+
+start_playing = ->
   simulate_keydown 'S'
   play generator play_list
 
-autoplay_finished = ->
+stop_playing = ->
+  if playing
+    playing = false
+    playing_finished()
+
+playing_finished = ->
   release_holded_keys()
   simulate_keyup 'S'
 
 play = (music_box) ->
+  return unless playing
   symbol = music_box.next()
   switch symbol
     when '|', '\n' then play music_box
-    when undefined then autoplay_finished()
+    when undefined then stop_playing()
     when '{'
       play_notes (note while (note = music_box.next()) != '}')
       delay (-> play music_box), meter
@@ -68,4 +81,7 @@ generator = (input_stream) ->
 delay = (callback, seconds) ->
   setTimeout callback, seconds * 1000
 
-window.autoplay = autoplay
+window.autoplay = {
+  start_playing,
+  stop_playing
+}
