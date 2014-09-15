@@ -1,10 +1,4 @@
 meter = 0.25
-play_list = """
-.345|5.3.|5..8|5.3.|.456|6.4.|6...|....
-.456|6.4.|6.9.|7.5.|.345|5.8.|5...|....
-.678|8.6.|8..6|8.6.|.456|6.4.|6...|....
-.456|6.4.|2..3|4.2.|..1.|....|....
-"""
 
 # simulate keyboard event
 
@@ -39,8 +33,9 @@ playing_timeout_obj = null
 start_playing = ->
   unless playing
     playing = true
+    meter = parseFloat $('#meter').val()
     simulate_keydown 'S'
-    play generator play_list
+    play generator $('#score').val()
 
 stop_playing = ->
   if playing
@@ -54,7 +49,7 @@ play = (music_box) ->
   return unless playing
   symbol = music_box.next()
   switch symbol
-    when '|', '\n' then play music_box
+    when '|', '\n', ' ' then play music_box
     when undefined then stop_playing()
     when '{'
       play_notes (note while (note = music_box.next()) != '}')
