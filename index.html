@@ -14,7 +14,8 @@
 
   <script src="clock.js"></script>
   <script src="util.js"></script>
-  <script src="keys.js"></script>
+  <script src="keyboard.js"></script>
+  <script src="musiculator.js"></script>
   <script src="piano.js"></script>
   <script src="autoplay.js"></script>
   
@@ -22,7 +23,7 @@
 <body onLoad="start_client();">
   
   <canvas id="clock" height="140" width="140"></canvas>
-  <canvas id="keys" height="500" width="400"></canvas>
+  <canvas id="musiculator" height="500" width="400"></canvas>
   <canvas id="piano" height="500" width="650"></canvas>
   <textarea id="score" rows="6" cols="100">
 .345|5.3.|5..8|5.3.|.456|6.4.|6...|....
@@ -42,7 +43,7 @@
     function start_client() {
       MIDI.loadPlugin(function(){
         clock();
-        keys();
+        musiculator.keys();
         piano.piano();
         autoplay.start_playing();
       });

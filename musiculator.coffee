@@ -1,22 +1,5 @@
-# document
-
-keyboard_press_handlers = {}
-keyboard_release_handlers = {}
-
-$(document).keydown (event) ->
-  # stop autoplay when user hits a key
-  # these extra lines of code are signs of code corruption
-  unless event.is_autoplay
-    window.autoplay.stop_playing()
-  keyboard_press_handlers[event.which]?()
-
-$(document).keyup (event) ->
-  keyboard_release_handlers[event.which]?()
-
-# entry
-  
 keys = ->
-  canvas = document.getElementById 'keys'
+  canvas = document.getElementById 'musiculator'
   ctx = canvas.getContext '2d'
   
   keys = for pos, i in key_positions
@@ -30,7 +13,7 @@ keys = ->
     )
 
   k.draw() for k in keys
-  keyboard_press_handlers[32] = ->
+  window.keyboard.add_press_handler 32, ->
     window.autoplay.stop_playing()
     window.autoplay.start_playing()
 
@@ -70,8 +53,8 @@ key_event_codes = [
 
 class Key
   constructor: (@id, @ctx, @position, @size, @text, @event_code) ->
-    keyboard_press_handlers[c] = @press for c in @event_code
-    keyboard_release_handlers[c] = @release for c in @event_code
+    window.keyboard.add_press_handler c, @press for c in @event_code
+    window.keyboard.add_release_handler c, @release for c in @event_code
     @is_pressed = false
 
   press: =>
@@ -147,4 +130,6 @@ music_key_up = (id) ->
   delete key_action_pool[id]
 
 
-window.keys = keys
+window.musiculator = {
+  keys
+}
