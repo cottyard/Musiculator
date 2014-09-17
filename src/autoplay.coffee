@@ -102,49 +102,46 @@
 #     symbol = score_scanner.next()
 #
 
+window.keyboard.add_press_action 'spacebar', ->
+  stop_playing()
+  start_playing()
+
+window.keyboard.add_press_handler (key_event) ->
+  stop_playing() unless \
+    window.keyboard.is_auto_triggered(key_event) or 
+    window.keyboard.key_equals(key_event, 'spacebar')
+
 meter = 0.25
 
-# simulate keyboard event
-
-simulate_keydown = (char) ->
-  trigger 'keydown', char.charCodeAt(0)
-
-simulate_keyup = (char) ->
-  trigger 'keyup', char.charCodeAt(0)
-  
-trigger = (event_type, which) ->
-  e = jQuery.Event event_type
-  e.which = which
-  e.is_autoplay = true
-  $(document).trigger(e)
+# keyboard
 
 holded_keys = ''
 
 hold_key = (char) ->
-  simulate_keydown char
+  window.keyboard.simulate_keydown char
   holded_keys += char
 
 release_holded_keys = ->
   for k in holded_keys
-    simulate_keyup k
+    window.keyboard.simulate_keyup k
   holded_keys = ''
 
 # play
 
-playing = false
+playing = no
 playing_timeout_obj = null
 
 start_playing = ->
   unless playing
-    playing = true
+    playing = yes
     meter = parseFloat $('#meter').val()
-    simulate_keydown 'S'
+    window.keyboard.simulate_keydown 'S'
     play generator $('#score').val()
 
 stop_playing = ->
   if playing
-    playing = false
-    simulate_keyup 'S'
+    playing = no
+    window.keyboard.simulate_keyup 'S'
     release_holded_keys()
     if playing_timeout_obj?
       clearTimeout playing_timeout_obj

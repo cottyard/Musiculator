@@ -9,13 +9,10 @@ keys = ->
       pos,
       key_sizes[i], 
       key_texts[i], 
-      key_event_codes[i],
+      key_binds[i],
     )
 
   k.draw() for k in keys
-  window.keyboard.add_press_handler 32, ->
-    window.autoplay.stop_playing()
-    window.autoplay.start_playing()
 
 # key
 
@@ -43,29 +40,29 @@ key_texts = [
   '#',      'b',
 ]
 
-key_event_codes = [
-  [       ], [48, 111], [189, 106], [187, 109],
-  [55, 103], [56, 104], [ 57, 105], [ 83, 107],
-  [52, 100], [53, 101], [ 54, 102],
-  [49,  97], [50,  98], [ 51,  99], [ 88,  13],
-  [65,  96],            [ 90, 110],
+key_binds = [
+  [            ], ['0', 'NUM_/'], ['-', 'NUM_*'], ['=', 'NUM_-'],
+  ['7', 'NUM_7'], ['8', 'NUM_8'], ['9', 'NUM_9'], ['S', 'NUM_+'],
+  ['4', 'NUM_4'], ['5', 'NUM_5'], ['6', 'NUM_6'],
+  ['1', 'NUM_1'], ['2', 'NUM_2'], ['3', 'NUM_3'], ['X', 'NUM_return'],
+  ['A', 'NUM_0'],                 ['Z', 'NUM_.'],
 ]
 
 class Key
-  constructor: (@id, @ctx, @position, @size, @text, @event_code) ->
-    window.keyboard.add_press_handler c, @press for c in @event_code
-    window.keyboard.add_release_handler c, @release for c in @event_code
-    @is_pressed = false
+  constructor: (@id, @ctx, @position, @size, @text, @binds) ->
+    window.keyboard.add_press_action key_bind, @press for key_bind in @binds
+    window.keyboard.add_release_action key_bind, @release for key_bind in @binds
+    @is_pressed = no
 
   press: =>
     return if @is_pressed
-    @is_pressed = true
+    @is_pressed = yes
     @draw_pressed()
     music_key_down @id
 
   release: =>
     return unless @is_pressed
-    @is_pressed = false
+    @is_pressed = no
     @draw()
     music_key_up @id
 
@@ -76,8 +73,8 @@ class Key
 
   draw_pressed: ->
     util.clear_rect @ctx, @position, @size
-    util.curved_rect @ctx, @position, @size, true
-    util.print_text @ctx, @position, @text, true
+    util.curved_rect @ctx, @position, @size, yes
+    util.print_text @ctx, @position, @text, yes
     
 # play note
 
