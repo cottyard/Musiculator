@@ -1,3 +1,5 @@
+# rename keys to buttons, keys to natural_keys, halfkeys to accidental_keys
+
 keys = ->
   canvas = document.getElementById 'musiculator'
   ctx = canvas.getContext '2d'

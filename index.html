@@ -12,12 +12,13 @@
   <script src="./inc/Base64.js" type="text/javascript"></script>
   <script src="./inc/base64binary.js" type="text/javascript"></script>
 
-  <script src="clock.js"></script>
+  <script src="src/clock.js"></script>
   <script src="lib/util.js"></script>
   <script src="lib/keyboard.js"></script>
   <script src="lib/musiculator.js"></script>
   <script src="lib/piano.js"></script>
-  <script src="lib/autoplay.js"></script>
+  <script src="lib/score.js"></script>
+  <script src="lib/autoplayer.js"></script>
   
 </head>
 <body onLoad="start_client();">
@@ -25,19 +26,18 @@
   <canvas id="clock" height="140" width="140"></canvas>
   <canvas id="musiculator" height="500" width="400"></canvas>
   <canvas id="piano" height="500" width="650"></canvas>
-  <textarea id="score" rows="6" cols="100">
-+
+  <textarea id="instruction" rows="6" cols="100"></textarea>
+  <textarea id="score" rows="6" cols="100">+
 .345|5.3.|5..C|5.3.|.456|6.4.|6...|~
 .456|6.4.|6.D.|7.5.|.345|5.C.|5...|~
 .67C|C.6.|C..6|C.6.|.456|6.4.|6...|~
-.456|6.4.|2..3|4.2.|..1.|~|~
-  </textarea>
-  <!-- ..8.3.3.|8.......|
-....3.3.|8...2.32|2.{A1}.2.2.|7.......|
-....2.2.|7...1.21|1.{Z1}.1.1.|6.......|
-....1.1.|6...{Z1}.1{Z1}|{Z1}.{X6}.{Z1}.{Z1}.|{A5}.......|
-....6...|7.....{A5}.|6.......|.... -->
-  <textarea id="meter" rows="1" cols="5">0.25</textarea>
+.456|6.4.|2..3|4.2.|..1.|~|~</textarea>
+  <button onclick="
+    instructions = score.compile();
+    $('#instruction').val(instructions);
+    autoplayer.play(instructions);
+    ">compile &amp; play</button>
+  <textarea id="tempo" rows="1" cols="5">240</textarea>
   
   <script>
     function start_client() {
@@ -45,7 +45,6 @@
         clock();
         musiculator.keys();
         piano.piano();
-        autoplay.start_playing();
       });
     }
   </script>

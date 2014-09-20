@@ -1,3 +1,5 @@
+# drawing shapes
+
 round_rect = (ctx, x, y, width, height, radius, fill) ->
   ctx.beginPath()
   ctx.moveTo x + radius, y
@@ -64,11 +66,26 @@ clear_canvas = (ctx, canvas) ->
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.restore();
 
+# functions
+
+generator = (container) ->
+  current = 0
+  next: ->
+    container[current++]
+
+bind = (func, args...) ->
+  -> func.apply @, args
+
+
+
 window.util = { 
   round_rect,
   print_text,
   clear_rect_native,
   clear_rect,
   curved_rect,
-  clear_canvas
+  clear_canvas,
+  
+  generator,
+  bind
 }

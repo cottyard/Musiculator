@@ -1,3 +1,5 @@
+# name the keys, shar flat, do re mi fa so la si h_do h_re h_mi h_fa h_so, h_oct, l_oct
+
 press_actions = {}
 release_actions = {}
 
@@ -14,15 +16,11 @@ add_release_handler = (handler) ->
   $(document).keyup handler
   
 $(document).keydown (event) ->
-  if action = press_actions[event.which]
-    action()
-    event.preventDefault()
+  press_actions[event.which]?()
 
 $(document).keyup (event) ->
-  if action = release_actions[event.which]
-    action()
-    event.preventDefault()
-
+  release_actions[event.which]?()
+  
 keycode_map =
   '1': 49
   '2': 50
