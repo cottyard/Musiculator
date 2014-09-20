@@ -81,20 +81,20 @@ start_playing = (instructions, callback_on_termination) ->
       millisecs = parseInt digits.join ''
       delay move_on, millisecs
 
-  # roll the ball
-
-  do move_on = ->
-    instr = instr_scanner.next()
-    if instr?
-      cookbook[instr]()
-    else
-      end_playing()
-      callback_on_termination()
-
   end_playing = ->
     unhold_all holded_buttons
     unhold_all holded_buttons_not_recorded
     clearTimeout timeout_obj if timeout_obj?
+
+  # roll the ball
+
+  do move_on = ->
+    instr = instr_scanner.next()
+    if instr
+      cookbook[instr]()
+    else
+      end_playing()
+      callback_on_termination()
 
   return end_playing
 

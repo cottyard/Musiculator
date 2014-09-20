@@ -23,24 +23,34 @@
 melody_forrest_gump =
   tempo: 240
   score: """
-    +
-    .345|5.3.|5..8|5.3.|.456|6.4.|6...|~
-    .456|6.4.|6.9.|7.5.|.345|5.8.|5...|~
-    .678|8.6.|8..6|8.6.|.456|6.4.|6...|~
-    .456|6.4.|2..3|4.2.|..1.|~|~
++
+.345|5.3.|5..C|5.3.|.456|6.4.|6...|~
+.456|6.4.|6.D.|7.5.|.345|5.C.|5...|~
+.67C|C.6.|C..6|C.6.|.456|6.4.|6...|~
+.456|6.4.|2..3|4.2.|..1.|~|~
   """
 
 melody_anonymous =
   tempo: 240
   score: """
-    +
-    0C33|C...|
-    ..33|C.2<32>|2#122|7...|
-    ..22|7.1<21>|1b111|6...|
-    ..11|6.=7<C7>|7677|+#5...|
-    ..6.|7..#5|6...|..00|
++
+0C33|C...|
+..33|C.2<32>|2#122|7...|
+..22|7.1<21>|1b111|6...|
+..11|6.=7<C7>|7677|+#5...|
+..6.|7..#5|6...|..00|
   """
 
+melody_lotr =
+  tempo: 200
+  score: """
+..12|3.5.|3.2.|1...|
+..35|6.C.|7.5.|3..<43>|2...|
+1..<11>|-b7..<b7b7>|=1...|
+...<45>|#5..<54>|b3..<45>|4...|b3.2.|
++1..<11>|=b7..<b7b7>|+1...|
+...<45>|#5...|5.#5.|#6...|#5..#6...|C...|~|~
+"""
 
 
 # melody =
@@ -51,9 +61,17 @@ melody_anonymous =
 #     4: '#4'
 #     5: '#5'
 
-get_melody_from_input = ->
+# interaction
+
+get_melody_from_ui = ->
   tempo: parseInt $('#tempo').val()
   score: $('#score').val()
+
+put_melody_to_ui = (melody) ->
+  $('#tempo').val(melody.tempo)
+  $('#score').val(melody.score)
+
+# compilation
 
 compile_melody_to_autoplayer_instructions = (melody) ->
   {tempo, score} = melody
@@ -89,14 +107,25 @@ compile_melody_to_autoplayer_instructions = (melody) ->
 
   ignored_symbols = ['\n', ' ', '|']
 
-  until (symbol = score_scanner.next()) is undefined
+  while (symbol = score_scanner.next())
     result_instructions += cookbook[symbol]() unless symbol in ignored_symbols
 
   return result_instructions
-  
+
+# api
+
+melody_list = [melody_forrest_gump, melody_anonymous, melody_lotr]
+current_melody_index = -1
+
 compile = ->
-  compile_melody_to_autoplayer_instructions get_melody_from_input()
+  compile_melody_to_autoplayer_instructions get_melody_from_ui()
+
+show_next_melody = ->
+  if ++current_melody_index  >= melody_list.length
+    current_melody_index = 0
+  put_melody_to_ui(melody_list[current_melody_index ])
 
 window.score = {
-  compile
+  compile,
+  show_next_melody
 }

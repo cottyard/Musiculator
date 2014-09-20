@@ -26,18 +26,18 @@
   <canvas id="clock" height="140" width="140"></canvas>
   <canvas id="musiculator" height="500" width="400"></canvas>
   <canvas id="piano" height="500" width="650"></canvas>
-  <textarea id="instruction" rows="6" cols="100"></textarea>
-  <textarea id="score" rows="6" cols="100">+
-.345|5.3.|5..C|5.3.|.456|6.4.|6...|~
-.456|6.4.|6.D.|7.5.|.345|5.C.|5...|~
-.67C|C.6.|C..6|C.6.|.456|6.4.|6...|~
-.456|6.4.|2..3|4.2.|..1.|~|~</textarea>
+  <textarea id="score" rows="10" cols="60"></textarea>
+  <textarea id="tempo" rows="1" cols="5"></textarea>
   <button onclick="
+    autoplayer.stop()
     instructions = score.compile();
     $('#instruction').val(instructions);
     autoplayer.play(instructions);
     ">compile &amp; play</button>
-  <textarea id="tempo" rows="1" cols="5">240</textarea>
+  <button onclick="
+    score.show_next_melody()
+    ">next melody</button>
+  <textarea id="instruction" rows="6" cols="100"></textarea>
   
   <script>
     function start_client() {
