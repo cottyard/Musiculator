@@ -93,7 +93,7 @@ compile_melody_to_autoplayer_instructions = (melody) ->
     '.': -> "(#{beat})"
     '~': -> "(#{beat * 4})"
     '(': -> beat_control = off; '%'
-    ')': -> beat_control = on; '#{beat}'
+    ')': -> beat_control = on; "(#{beat})"
     
   add_music_symbol_to_cookbook = (symbol) ->
     cookbook[symbol] = -> beat_controlled "~#{symbol}"
